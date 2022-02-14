@@ -30,53 +30,40 @@ public class DAO {
     	//--- データベース接続
         Connection con = getConnection();
         
-        //--- tenpoIdとuserIdがnullかどうかで判断してSQL文を作る
-        if (tenpoId != null && userId != null) {
-        	String sql1 = "select POINT from point where TENPO_ID = ? AND USER_ID = ?";
-        	//--- プリペアドステートメントへ登録
-            PreparedStatement st1 = con.prepareStatement(sql1);
+        //--- SQL文作成
+        String sql1 = "select POINT from point where TENPO_ID = ? AND USER_ID = ?";
+        PreparedStatement st1 = con.prepareStatement(sql1);
+        //TENPO_IDとUSER_IDのセット
+        st1.setString(1, tenpoId);
+        st1.setString(2, userId);
+        ResultSet rs = st1.executeQuery();
+        //該当するTENPO_IDとUSER_IDがあった場合POINTを返す
+        while(rs.next() == true) {
+        //--- pointを受け取る
+        point = rs.getInt("POINT");
+        }
+        if (point == 0) {
+            //該当するSQL文がない場合のSQL文作成
+            String sql2 = "insert into point values(?, ?, 500)";
+            st1 = con.prepareStatement(sql2);
             //TENPO_IDとUSER_IDのセット
             st1.setString(1, tenpoId);
             st1.setString(2, userId);
-            //クエリの結果を取得
-            ResultSet rs = st1.executeQuery();
-            //--- 結果のpointを変数へ追加するための繰返し処理
-            while(rs.next()) {
-            	//--- pointを受け取る
-            	point = rs.getInt("POINT");
-            }
-            //--- オブジェクトを閉じる
-            st1.close();
-            con.close();
-        }else {
-        	String sql2 = "insert into point values(?, ?, 500)";
-            //--- プリペアドステートメントへ登録
-            PreparedStatement st2 = con.prepareStatement(sql2);
+            st1.executeUpdate();
+            st1 = con.prepareStatement(sql1);
             //TENPO_IDとUSER_IDのセット
-            st2.setString(1, tenpoId);
-            st2.setString(2, userId);
-            st2.executeUpdate();
-            //--- オブジェクトを閉じる
-            st2.close();
-            con.close();
-            
-            String sql3 = "select POINT from point where TENPO_ID = ? AND USER_ID = ?";
-        	//--- プリペアドステートメントへ登録
-            PreparedStatement st3 = con.prepareStatement(sql3);
-            //TENPO_IDとUSER_IDのセット
-            st3.setString(1, tenpoId);
-            st3.setString(2, userId);
-            //クエリの結果を取得
-            ResultSet rs = st3.executeQuery();
-            //--- 結果のpointを変数へ追加するための繰返し処理
-            while(rs.next()) {
-            	//--- pointを受け取る
-            	point = rs.getInt("POINT");
+            st1.setString(1, tenpoId);
+            st1.setString(2, userId);
+            ResultSet rs2 = st1.executeQuery();
+            //該当するTENPO_IDとUSER_IDがあった場合POINTを返す
+            while(rs2.next() == true) {
+            //--- pointを受け取る
+            point = rs.getInt("POINT");
             }
-            //--- オブジェクトを閉じる
-            st3.close();
-            con.close();
-        }
+		}
+        //--- オブジェクトを閉じる
+        st1.close();
+        con.close();
         return point;
     }
 }
